@@ -8,7 +8,7 @@
 */
 int interactive(ino_t *info)
 {
-	return (isatty(STDIN_FILENO) && info->readfd <= 2);
+	return (isatty(STDIN_FILENO));
 }
 
 /**
