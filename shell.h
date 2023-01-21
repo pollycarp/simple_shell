@@ -10,6 +10,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <errno.h>
+#include <string.h>
+#include <ctype.h>
 
 #define END_OF_FILE -2
 #define EXIT -3
