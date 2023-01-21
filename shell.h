@@ -68,7 +68,7 @@ char **sparse_str(char *line, char **env);
 int execute(char **args, char **argv, int count, char *line, char **env);
 void prompt_user(void);
 
-void *_realloc(void *ptr, unsigned int new_size);
+void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
 int _count_point(char *buffer);
 
 void *_malloc(unsigned int nmemb, unsigned int size);
