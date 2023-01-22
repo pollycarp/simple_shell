@@ -16,8 +16,8 @@ int cant_open(char *file_path)
 {
 	char *error, *hist_str;
 	int len;
-	char hist;
-	char name;
+	int hist;
+	int name;
 
 	hist_str = _itoa(hist);
 	if (!hist_str)
@@ -61,6 +61,7 @@ int proc_file_commands(char *file_path, int *exe_ret)
 	unsigned int old_size = 120;
 	char *line, **args, **front;
 	char buffer[120];
+	int hist;
 	int ret;
 
 	hist = 0;

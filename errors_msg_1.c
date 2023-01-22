@@ -8,16 +8,14 @@ char *error_2_syntax(char **args);
 /**
  * error_env - Creates an error message for shellby_env errors.
  * @args: An array of arguments passed to the command.
- *@name: the name of file
- *@hist: the previous string
  * Return: The error string.
  */
 char *error_env(char **args)
 {
 	char *error, *hist_str;
 	int len;
-	char name;
-	char hist;
+	int name;
+	int hist;
 
 	hist_str = _itoa(hist);
 	if (!hist_str)

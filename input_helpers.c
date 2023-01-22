@@ -18,6 +18,7 @@ char *get_args(char *line, int *exe_ret)
 {
 	size_t n = 0;
 	ssize_t read;
+	int hist;
 	char *prompt = "$ ";
 
 	if (line)
@@ -111,6 +112,7 @@ int run_args(char **args, char **front, int *exe_ret)
 {
 	int ret, i;
 	int (*builtin)(char **args, char **front);
+	int hist;
 
 	builtin = get_builtin(args[0]);
 
