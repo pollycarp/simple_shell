@@ -15,6 +15,8 @@ char *error_env(char **args)
 {
 	char *error, *hist_str;
 	int len;
+	char name;
+	char hist;
 
 	hist_str = _itoa(hist);
 	if (!hist_str)
