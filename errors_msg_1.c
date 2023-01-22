@@ -8,7 +8,8 @@ char *error_2_syntax(char **args);
 /**
  * error_env - Creates an error message for shellby_env errors.
  * @args: An array of arguments passed to the command.
- *
+ *@name: the name of file
+ *@hist: the previous string
  * Return: The error string.
  */
 char *error_env(char **args)
