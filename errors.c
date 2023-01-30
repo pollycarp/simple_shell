@@ -1,115 +1,44 @@
 #include "shell.h"
 
-int num_len(int num);
-char *_itoa(int num);
-int create_error(char **args, int err);
-
 /**
- * num_len - Counts the digit length of a number.
- * @num: The number to measure.
- *
- * Return: The digit length.
+ * read_input - stores whatever is passed to it as standard input
+ * Return: string containing the input
  */
-int num_len(int num)
+char *read_input(void)
 {
-	unsigned int num1;
-	int len = 1;
+	char *line = NULL;
+	ssize_t signal;
+	size_t bufsize = 0;
+	int i;
 
-	if (num < 0)
+	/*get string that the user inputs and pass it to line variable*/
+	signal = getline(&line, &bufsize, stdin);
+	if (!line)
 	{
-		len++;
-		num1 = num * -1;
+		perror("Error allocating memory for buffer");
+		return (0);
 	}
-	else
+	if (signal == 1)
 	{
-		num1 = num;
-	}
-	while (num1 > 9)
-	{
-		len++;
-		num1 /= 10;
-	}
-
-	return (len);
-}
-
-/**
- * _itoa - Converts an integer to a string.
- * @num: The integer.
- *
- * Return: The converted string.
- */
-char *_itoa(int num)
-{
-	char *buffer;
-	int len = num_len(num);
-	unsigned int num1;
-
-	buffer = malloc(sizeof(char) * (len + 1));
-	if (!buffer)
+		free(line);
 		return (NULL);
-
-	buffer[len] = '\0';
-
-	if (num < 0)
+	}
+	else if (signal == EOF)
 	{
-		num1 = num * -1;
-		buffer[0] = '-';
+		if (isatty(STDIN_FILENO))
+			write(STDOUT_FILENO, "\n", 1);
+		free(line);
+		exit(0);
 	}
 	else
 	{
-		num1 = num;
+		for (i = 0; line[i] == ' ' && line[i + 1] == ' '; i++)
+			;
+		if (!line[i] && line[i + 1] == '\n')
+		{
+			free(line);
+			return (0);
+		}
 	}
-
-	len--;
-	do {
-		buffer[len] = (num1 % 10) + '0';
-		num1 /= 10;
-		len--;
-	} while (num1 > 0);
-
-	return (buffer);
-}
-
-
-/**
- * create_error - Writes a custom error message to stderr.
- * @args: An array of arguments.
- * @err: The error value.
- *
- * Return: The error value.
- */
-int create_error(char **args, int err)
-{
-	char *error;
-
-	switch (err)
-	{
-	case -1:
-		error = error_env(args);
-		break;
-	case 1:
-		error = error_1(args);
-		break;
-	case 2:
-		if (*(args[0]) == 'e')
-			error = error_2_exit(++args);
-		else if (args[0][0] == ';' || args[0][0] == '&' || args[0][0] == '|')
-			error = error_2_syntax(args);
-		else
-			error = error_2_cd(args);
-		break;
-	case 126:
-		error = error_126(args);
-		break;
-	case 127:
-		error = error_127(args);
-		break;
-	}
-	write(STDERR_FILENO, error, _strlen(error));
-
-	if (error)
-		free(error);
-	return (err);
-
+	return (line);
 }
