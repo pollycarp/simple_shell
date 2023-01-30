@@ -1,128 +1,112 @@
 #include "shell.h"
 
-int cant_open(char *file_path);
-int proc_file_commands(char *file_path, int *exe_ret);
-
 /**
- * cant_open - If the file doesn't exist or lacks proper permissions, print
- *a cant open error.
- *@file_path: Path to the supposed file.
- *@hist: previous file
- @name: the name
- * Return: 127.
- */
-
-int cant_open(char *file_path)
-{
-	char *error, *hist_str;
-	int len;
-	int hist;
-	int name;
-
-	hist_str = _itoa(hist);
-	if (!hist_str)
-		return (127);
-
-	len = _strlen(name) + _strlen(hist_str) + _strlen(file_path) + 16;
-	error = malloc(sizeof(char) * (len + 1));
-	if (!error)
-	{
-		free(hist_str);
-		return (127);
-	}
-
-	_strcpy(error, name);
-	_strcat(error, ": ");
-	_strcat(error, hist_str);
-	_strcat(error, ": Can't open ");
-	_strcat(error, file_path);
-	_strcat(error, "\n");
-
-	free(hist_str);
-	write(STDERR_FILENO, error, len);
-	free(error);
-	return (127);
-}
-
-/**
- * proc_file_commands - Takes a file and attempts to run the commands stored
- * within.
- * @file_path: Path to the file.
- * @exe_ret: Return value of the last executed command.
+ *_puts - prints a string
+ *@str: A pointer to an int that will be updated
  *
- * Return: If file couldn't be opened - 127.
- *	   If malloc fails - -1.
- *	   Otherwise the return value of the last command ran.
+ *Return: void
  */
-int proc_file_commands(char *file_path, int *exe_ret)
+void _puts(char *str)
 {
-	ssize_t file, b_read, i;
-	unsigned int line_size = 0;
-	unsigned int old_size = 120;
-	char *line, **args, **front;
-	char buffer[120];
-	int hist;
-	int ret;
+	int n;
 
-	hist = 0;
-	file = open(file_path, O_RDONLY);
-	if (file == -1)
+	for (n = 0 ; str[n] != '\0' ; n++)
 	{
-		*exe_ret = cant_open(file_path);
-		return (*exe_ret);
+		_putchar(str[n]);
 	}
-	line = malloc(sizeof(char) * old_size);
-	if (!line)
-		return (-1);
-	do {
-		b_read = read(file, buffer, 119);
-		if (b_read == 0 && line_size == 0)
-			return (*exe_ret);
-		buffer[b_read] = '\0';
-		line_size += b_read;
-		line = _realloc(line, old_size, line_size);
-		_strcat(line, buffer);
-		old_size = line_size;
-	} while (b_read);
-	for (i = 0; line[i] == '\n'; i++)
-		line[i] = ' ';
-	for (; i < line_size; i++)
-	{
-		if (line[i] == '\n')
-		{
-			line[i] = ';';
-			for (i += 1; i < line_size && line[i] == '\n'; i++)
-				line[i] = ' ';
-		}
-	}
-	variable_replacement(&line, exe_ret);
-	handle_line(&line, line_size);
-	args = _strtok(line, " ");
-	free(line);
-	if (!args)
-		return (0);
-	if (check_args(args) != 0)
-	{
-		*exe_ret = 2;
-		free_args(args, args);
-		return (*exe_ret);
-	}
-	front = args;
-
-	for (i = 0; args[i]; i++)
-	{
-		if (_strncmp(args[i], ";", 1) == 0)
-		{
-			free(args[i]);
-			args[i] = NULL;
-			ret = call_args(args, front, exe_ret);
-			args = &args[++i];
-			i = 0;
-		}
-	}
-
-	ret = call_args(args, front, exe_ret);
-
-	free(front);
-	return (ret);
+	_putchar('\n');
 }
+
+/**
+ * _strlen - returns a string
+ * @s: integer to be used
+ * Return: length of string
+ */
+int _strlen(const char *s)
+{
+	int i;
+
+	i = 0;
+	while (s[i] != '\0')
+	{
+		i++;
+	}
+	return ((i + 1));
+}
+
+/**
+ * _putchar - writes the character c to stdout
+ * @c: The character to print
+ *
+ * Return: On success 1.
+ * On error, -1 is returned, and errno is set appropriately.
+ */
+int _putchar(char c)
+{
+	return (write(1, &c, 1));
+}
+
+/**
+ *str_concat - back a pointer to array
+ *@s1: Array one
+ *@s2: Array two
+ *Return: Always an array dinamic
+ */
+char *str_concat(char *s1, char *s2)
+{
+	char *dst;
+	unsigned int i, j, size;
+
+	/*If the array is empty*/
+	if (s1 == NULL)
+		s1 = "";
+
+	if (s2 == NULL)
+		s2 = "";
+
+	/*count size total*/
+	size = (_strlen(s1) + _strlen(s2) + 1);
+
+	/*malloc*/
+	dst = (char *) malloc(size * sizeof(char));
+
+	if (dst == 0)
+	{
+		return (NULL);
+	}
+
+	/*Concatenate arrays*/
+	for (i = 0; *(s1 + i) != '\0'; i++)
+		*(dst + i) = *(s1 + i);
+
+	for (j = 0; *(s2 + j) != '\0'; j++)
+	{
+		*(dst + i) = *(s2 + j);
+		i++;
+	}
+	dst[i] = '\0';
+
+	return (dst);
+}
+
+/**
+ * _strcmp - compare two strings
+ * @s1: string one
+ * @s2: string two
+ * Return: returns an integer less  than,  equal  to,  or
+ * greater  than zero if s1 is found, respectively, to be
+ * less than, to match, or be greater than s2.
+ */
+int _strcmp(char *s1, char *s2)
+{
+	char *p1 = s1;
+	char *p2 = s2;
+
+	while (*p1 != '\0' && *p2 != '\0' && *p1 == *p2)
+	{
+		p1++;
+		p2++;
+	}
+	return (*p1 - *p2);
+}
+
