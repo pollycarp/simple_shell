@@ -6,12 +6,15 @@ char *error_127(char **args);
 /**
  * error_126 - Creates an error message for permission denied failures.
  * @args: An array of arguments passed to the command.
- *
+ *@hist: previous string length
+ *@name: the new name
  * Return: The error string.
  */
 char *error_126(char **args)
 {
 	char *error, *hist_str;
+	int hist;
+	int name;
 	int len;
 
 	hist_str = _itoa(hist);

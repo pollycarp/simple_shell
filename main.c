@@ -80,6 +80,8 @@ int main(int argc, char *argv[])
 	int ret = 0, retn;
 	int *exe_ret = &retn;
 	char *prompt = "$ ", *new_line = "\n";
+	int name;
+	int hist
 
 	name = argv[0];
 	hist = 1;
