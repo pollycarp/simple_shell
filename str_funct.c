@@ -1,86 +1,102 @@
 #include "shell.h"
 
-int _strlen(const char *s);
-char *_strcpy(char *dest, const char *src);
-char *_strcat(char *dest, const char *src);
-char *_strncat(char *dest, const char *src, size_t n);
+/**
+ * _which - identifies the path of the command(*args) that is being passed
+ * to it
+ * @foundpath: the command that is being passed to it
+ * Return: the complete path of the command or 0 on failure
+ */
+char **_which(char *foundpath)
+{
+	int size = TOK_BUFSIZE, i = 0;
+	char *copy_path = NULL, *tokens = NULL, *sparse = ":=";
+	char **dir = _malloc(sizeof(char *), size);
+
+	if (foundpath == NULL)
+	{
+		free(foundpath);
+		return (0);
+	}
+	if (dir == NULL)
+	{
+		free(foundpath);
+		perror("Error allocated memory");
+		return (NULL);
+	}
+
+	copy_path = _strdup(foundpath); /*copy PATH*/
+	tokens = strtok(copy_path, sparse); /*tokenize copied PATH*/
+	while (tokens != NULL)
+	{
+		dir[i] = tokens;
+		i++;
+		tokens = strtok(NULL, sparse);
+	}
+
+	return (dir);
+}
+
 
 /**
- * _strlen - Returns the length of a string.
- * @s: A pointer to the characters string.
- *
- * Return: The length of the character string.
+ * child_process - executes a command if the path of it is an executable file
+ * @args: the command to be executed
+ * @env: environment variable
+ * @status_main: status variable
+ * @av: name of program
+ * @cnt: count of prompt
+ * Return: 1
  */
-int _strlen(const char *s)
+int child_process(char **av, char **args, char **env, int status_main, int cnt)
 {
-	int length = 0;
+	pid_t pid;
+	int status;
 
-	if (!s)
-		return (length);
-	for (length = 0; s[length]; length++)
-		;
-	return (length);
+	if (args == NULL)
+		return (-1);
+
+	pid = fork();
+	if (pid  < 0)
+	{
+		perror("./hsh: ");
+		exit(1);
+	}
+	else if (pid == 0)
+	{
+		if (execve(args[0], args, env) == -1)
+		{
+			_error(av[0], cnt, args[0]);
+			free(args);
+			exit(1);
+		}
+		exit(0);
+	}
+	else
+	{
+		if (status_main == 1)
+			free(args[0]);
+
+		free(args);
+		waitpid(pid, &status, WUNTRACED);
+	}
+	return (1);
 }
 
 /**
- * _strcpy - Copies the string pointed to by src, including the
- *           terminating null byte, to the buffer pointed by des.
- * @dest: Pointer to the destination of copied string.
- * @src: Pointer to the src of the source string.
- *
- * Return: Pointer to dest.
- */
-char *_strcpy(char *dest, const char *src)
+ * search_path - gets the path to execute commands
+ * @environ: Environment variable
+ * Return: token_path
+ **/
+char **search_path(char **environ)
 {
-	size_t i;
+	int position = 0;
+	char **token_path;
 
-	for (i = 0; src[i] != '\0'; i++)
-		dest[i] = src[i];
-	dest[i] = '\0';
-	return (dest);
-}
-
-/**
- * _strcat - Concantenates two strings.
- * @dest: Pointer to destination string.
- * @src: Pointer to source string.
- *
- * Return: Pointer to destination string.
- */
-char *_strcat(char *dest, const char *src)
-{
-	char *destTemp;
-	const char *srcTemp;
-
-	destTemp = dest;
-	srcTemp =  src;
-
-	while (*destTemp != '\0')
-		destTemp++;
-
-	while (*srcTemp != '\0')
-		*destTemp++ = *srcTemp++;
-	*destTemp = '\0';
-	return (dest);
-}
-
-/**
- * _strncat - Concantenates two strings where n number
- *            of bytes are copied from source.
- * @dest: Pointer to destination string.
- * @src: Pointer to source string.
- * @n: n bytes to copy from src.
- *
- * Return: Pointer to destination string.
- */
-char *_strncat(char *dest, const char *src, size_t n)
-{
-	size_t dest_len = _strlen(dest);
-	size_t i;
-
-	for (i = 0; i < n && src[i] != '\0'; i++)
-		dest[dest_len + i] = src[i];
-	dest[dest_len + i] = '\0';
-
-	return (dest);
+	for (; environ[position] != NULL ; position++)
+	{
+		if (environ[position][0] == 'P' && environ[position][2] == 'T')
+		{
+			token_path = _which(environ[position]);
+		}
+	}
+	return (token_path);
 }
