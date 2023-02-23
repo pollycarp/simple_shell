@@ -1,60 +1,30 @@
 #include "shell.h"
-
 /**
- * _strdup - copes a string to another
- * @str: the array
- * Return: pointer of sting copied
+ * _get_path - get variable PATH.
+ * @env: enviromente local
+ * Return: value of PATH.
  */
-char *_strdup(char *str)
-{
-	int i, j;
-	char *s = NULL;
 
-	if (str == NULL)
-		return (0);
-	for (i = 0; str[i]; i++)
+char *_get_path(char **env)
+{
+	size_t index = 0, var = 0, count = 5;
+	char *path = NULL;
+
+	for (index = 0; _strncmp(env[index], "PATH=", 5); index++)
 		;
-	i++;
-	s = malloc(i * sizeof(char *));
-	if (!s)
+	if (env[index] == NULL)
 		return (NULL);
-	for (j = 0; j < i; j++)
-	{
-		s[j] = str[j];
-	}
-	return (s);
+
+	for (count = 5; env[index][var]; var++, count++)
+		;
+	path = malloc(sizeof(char) * (count + 1));
+
+	if (path == NULL)
+		return (NULL);
+
+	for (var = 5, count = 0; env[index][var]; var++, count++)
+		path[count] = env[index][var];
+
+	path[count] = '\0';
+	return (path);
 }
-
-/**
- * _itoa - integer to ascii
- * @num: num
- * @base: base
- * Return: char
- * Reference: https://gist.github.com/narnat/95733cd0ad7bfac0d90697292914c407
- **/
-char *_itoa(int num, int base)
-{
-	static char *array = "0123456789abcdef";
-	static char buffer[50];
-	char sign = 0;
-	char *ptr;
-	unsigned long n = num;
-
-	if (num < 0)
-	{
-		n = -num;
-		sign = '-';
-	}
-	ptr = &buffer[49];
-	*ptr = '\0';
-
-	do      {
-		*--ptr = array[n % base];
-		n /= base;
-	} while (n != 0);
-
-	if (sign)
-		*--ptr = sign;
-	return (ptr);
-}
-
