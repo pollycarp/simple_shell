@@ -1,102 +1,51 @@
 #include "shell.h"
-
 /**
- * _which - identifies the path of the command(*args) that is being passed
- * to it
- * @foundpath: the command that is being passed to it
- * Return: the complete path of the command or 0 on failure
+ * main - Main arguments functions
+ * @ac: Count of argumnents
+ * @av: Arguments
+ * @env: Environment
+ * Return: _exit = 0.
  */
-char **_which(char *foundpath)
+int main(int ac, char **av, char **env)
 {
-	int size = TOK_BUFSIZE, i = 0;
-	char *copy_path = NULL, *tokens = NULL, *sparse = ":=";
-	char **dir = _malloc(sizeof(char *), size);
-
-	if (foundpath == NULL)
+	int pathValue = 0, status = 0, is_path = 0;
+	char *line = NULL, /**ptr to inpt*/ **commands = NULL; /**tokenized commands*/
+	(void)ac;
+	while (1)/* loop until exit */
 	{
-		free(foundpath);
-		return (0);
-	}
-	if (dir == NULL)
-	{
-		free(foundpath);
-		perror("Error allocated memory");
-		return (NULL);
-	}
-
-	copy_path = _strdup(foundpath); /*copy PATH*/
-	tokens = strtok(copy_path, sparse); /*tokenize copied PATH*/
-	while (tokens != NULL)
-	{
-		dir[i] = tokens;
-		i++;
-		tokens = strtok(NULL, sparse);
-	}
-
-	return (dir);
-}
-
-
-/**
- * child_process - executes a command if the path of it is an executable file
- * @args: the command to be executed
- * @env: environment variable
- * @status_main: status variable
- * @av: name of program
- * @cnt: count of prompt
- * Return: 1
- */
-int child_process(char **av, char **args, char **env, int status_main, int cnt)
-{
-	pid_t pid;
-	int status;
-
-	if (args == NULL)
-		return (-1);
-
-	pid = fork();
-	if (pid  < 0)
-	{
-		perror("./hsh: ");
-		exit(1);
-	}
-	else if (pid == 0)
-	{
-		if (execve(args[0], args, env) == -1)
+		errno = 0;
+		line = _getline_command();/** reads user input*/
+		if (line == NULL && errno == 0)
+			return (0);
+		if (line)
 		{
-			_error(av[0], cnt, args[0]);
-			free(args);
-			exit(1);
+			pathValue++;
+			commands = tokenize(line);/** tokenizes or parse user input*/
+			if (!commands)
+				free(line);
+			if (!_strcmp(commands[0], "env"))/**checks if user wrote env"*/
+				_getenv(env);
+			else
+			{
+				is_path = _values_path(&commands[0], env);/** tokenizes PATH*/
+				status = _fork_fun(commands, av, env, line, pathValue, is_path);
+					if (status == 200)
+					{
+						free(line);
+						return (0);
+					}
+				if (is_path == 0)
+					free(commands[0]);
+			}
+			free(commands); /*free up memory*/
 		}
-		exit(0);
-	}
-	else
-	{
-		if (status_main == 1)
-			free(args[0]);
-
-		free(args);
-		waitpid(pid, &status, WUNTRACED);
-	}
-	return (1);
-}
-
-/**
- * search_path - gets the path to execute commands
- * @environ: Environment variable
- * Return: token_path
- **/
-char **search_path(char **environ)
-{
-	int position = 0;
-	char **token_path;
-
-	for (; environ[position] != NULL ; position++)
-	{
-		if (environ[position][0] == 'P' && environ[position][2] == 'T')
+		else
 		{
-			token_path = _which(environ[position]);
+			if (isatty(STDIN_FILENO))
+				write(STDOUT_FILENO, "\n", 1);/** Writes to standard output*/
+			exit(status);
 		}
+		free(line);
 	}
-	return (token_path);
+	return (status);
 }
