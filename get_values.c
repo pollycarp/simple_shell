@@ -1,47 +1,74 @@
 #include "shell.h"
+
 /**
- * _values_path - Separate the path in new strings.
- * @arg: Command input of user.
- * @env: Enviroment.
- * Return: Pointer to strings.
+ * clear_info - initializes info_t struct
+ * @info: struct address
  */
-int _values_path(char **arg, char **env)
+void clear_info(info_t *info)
 {
-	char *token = NULL, *path_rela = NULL, *path_absol = NULL;
-	size_t value_path, len;
-	struct stat stat_lineptr;
-
-	if (stat(*arg, &stat_lineptr) == 0)
-		return (-1);
-	path_rela = _get_path(env);/** gets the content of "PATH="*/
-	if (!path_rela)
-		return (-1);
-	token = strtok(path_rela, ":"); /**tokenizes the content of "PATH="*/
-	len = _strlen(*arg); /**gets length of arg*/
-	while (token)
-	{
-		value_path = _strlen(token);
-		path_absol = malloc(sizeof(char) * (value_path + len + 2));
-		if (!path_absol)
-		{
-			free(path_rela);
-			return (-1);
-		}
-		path_absol = strcpy(path_absol, token);
-		_strcat(path_absol, "/");
-		_strcat(path_absol, *arg);
-
-		if (stat(path_absol, &stat_lineptr) == 0)
-		{
-			*arg = path_absol;
-			free(path_rela);
-			return (0);
-		}
-		free(path_absol);
-		token = strtok(NULL, ":");
-	}
-	token = '\0';
-	free(path_rela);
-	return (-1);
+	info->arg = NULL;
+	info->argv = NULL;
+	info->path = NULL;
+	info->argc = 0;
 }
 
+/**
+ * set_info - initializes info_t struct
+ * @info: struct address
+ * @av: argument vector
+ */
+void set_info(info_t *info, char **av)
+{
+	int i = 0;
+
+	info->fname = av[0];
+	if (info->arg)
+	{
+		info->argv = strtow(info->arg, " \t");
+		if (!info->argv)
+		{
+
+			info->argv = malloc(sizeof(char *) * 2);
+			if (info->argv)
+			{
+				info->argv[0] = _strdup(info->arg);
+				info->argv[1] = NULL;
+			}
+		}
+		for (i = 0; info->argv && info->argv[i]; i++)
+			;
+		info->argc = i;
+
+		replace_alias(info);
+		replace_vars(info);
+	}
+}
+
+/**
+ * free_info - frees info_t struct fields
+ * @info: struct address
+ * @all: true if freeing all fields
+ */
+void free_info(info_t *info, int all)
+{
+	ffree(info->argv);
+	info->argv = NULL;
+	info->path = NULL;
+	if (all)
+	{
+		if (!info->cmd_buf)
+			free(info->arg);
+		if (info->env)
+			free_list(&(info->env));
+		if (info->history)
+			free_list(&(info->history));
+		if (info->alias)
+			free_list(&(info->alias));
+		ffree(info->environ);
+			info->environ = NULL;
+		bfree((void **)info->cmd_buf);
+		if (info->readfd > 2)
+			close(info->readfd);
+		_putchar(BUF_FLUSH);
+	}
+}
